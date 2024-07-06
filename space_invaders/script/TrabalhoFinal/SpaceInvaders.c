@@ -346,29 +346,14 @@ tJogo MatouInimigo(tJogo jogo)
       {
         for (int j = -1; j < 2; j++)
         {
-          if (jogo.horizontal == 1)
+          if (jogo.tiro.linha == jogo.inimigo[k].linha + i - 1 &&
+              jogo.tiro.coluna == jogo.inimigo[k].coluna + j - 1 && jogo.inimigo[k].morreu == 0)
           {
-            if (jogo.tiro.linha == jogo.inimigo[k].linha + i - 1 &&
-                jogo.tiro.coluna == jogo.inimigo[k].coluna + j && jogo.inimigo[k].morreu == 0)
-            {
-              jogo.inimigo[k].morreu = 1;
-              jogo.inimigosRestantes--;
-              jogo.tiro.ativo = 0;
-              jogo.movimento.pontos += jogo.inimigo[k].coluna * (jogo.mapa.qtd_linhas - jogo.inimigo[k].linha - 1);
-              return jogo;
-            }
-          }
-          else
-          {
-            if (jogo.tiro.linha == jogo.inimigo[k].linha + i - 1 &&
-                jogo.tiro.coluna == jogo.inimigo[k].coluna + j - 2 && jogo.inimigo[k].morreu == 0)
-            {
-              jogo.inimigo[k].morreu = 1;
-              jogo.inimigosRestantes--;
-              jogo.tiro.ativo = 0;
-              jogo.movimento.pontos += (jogo.inimigo[k].coluna - 2) * (jogo.mapa.qtd_linhas - jogo.inimigo[k].linha - 1);
-              return jogo;
-            }
+            jogo.inimigo[k].morreu = 1;
+            jogo.inimigosRestantes--;
+            jogo.tiro.ativo = 0;
+            jogo.movimento.pontos += (jogo.inimigo[k].coluna - 1) * (jogo.mapa.qtd_linhas - jogo.inimigo[k].linha - 1);
+            return jogo;
           }
         }
       }
@@ -489,7 +474,9 @@ tJogo InicializaJogo(char **argv)
   fclose(inimigo_txt);
 
   // CRIACAO DO inicializao.txt
-  FILE *inicializao_txt = fopen("./saida/inicializacao.txt", "w");
+  char diretorio_inicializacao[MAX_DIRETORIO];
+  sprintf(diretorio_inicializacao, "%s/saida/inicializacao.txt", argv[1]);
+  FILE *inicializao_txt = fopen(diretorio_inicializacao, "w");
   if (inicializao_txt == NULL)
   {
     printf("Erro ao gerar o arquivo inicializacao.txt\n");
@@ -531,7 +518,9 @@ tJogo InicializaJogo(char **argv)
 // FUNCAO REALIZA JOGO
 void RealizaJogo(tJogo jogo, char **argv)
 {
-  FILE *saida_txt = fopen("./saida/saida.txt", "w");
+  char diretorio_saida[MAX_DIRETORIO];
+  sprintf(diretorio_saida, "%s/saida/saida.txt", argv[1]);
+  FILE *saida_txt = fopen(diretorio_saida, "w");
   if (saida_txt == NULL)
   {
     printf("Erro ao gerar o arquivo saida.txt\n");
@@ -553,7 +542,7 @@ void RealizaJogo(tJogo jogo, char **argv)
   if (jogo.terminou == 1)
   {
     PrintaMapa(jogo, saida_txt);
-    fprintf(saida_txt, "Parabens, voce ganhou!\n");
+    fprintf(saida_txt, "Parabéns, você ganhou!\n");
     return;
   }
 
@@ -563,7 +552,21 @@ void RealizaJogo(tJogo jogo, char **argv)
 
   while (jogo.terminou == 0)
   {
-    jogo.movimento.iteracao++;
+    if (InimigoCruzouLinha(jogo))
+    {
+      jogo.terminou = 1;
+      fprintf(saida_txt, "Você perdeu, tente novamente!\n");
+      break;
+    }
+
+    if (jogo.inimigosRestantes == 0)
+    {
+      jogo.terminou = 1;
+      fprintf(saida_txt, "Parabéns, você ganhou!\n");
+      break;
+    }
+
+    jogo = MatouInimigo(jogo);
 
     // move inimigo
     if (jogo.descer == 1)
@@ -582,33 +585,21 @@ void RealizaJogo(tJogo jogo, char **argv)
         jogo = MoveInimigo(0, -1, jogo);
       }
     }
-
-    jogo = MatouInimigo(jogo);
     jogo = VerificaParedeInimigo(jogo);
+
+    // move tiro
+    jogo = MoveTiro(jogo);
+
+    jogo.movimento.iteracao++;
 
     // move nave
     fscanf(entrada_txt, "%c", &jogo.movimento.jogada);
     fscanf(entrada_txt, "%*c");
-    jogo = MoveTiro(jogo);
     jogo = MoveNave(jogo);
 
     jogo = DefineMapa(jogo);
 
     PrintaMapa(jogo, saida_txt);
-
-    if (InimigoCruzouLinha(jogo))
-    {
-      jogo.terminou = 1;
-      fprintf(saida_txt, "Voce perdeu, tente novamente!\n");
-      break;
-    }
-
-    if (jogo.inimigosRestantes == 0)
-    {
-      jogo.terminou = 1;
-      fprintf(saida_txt, "Parabens, voce ganhou!");
-      break;
-    }
   }
 
   fclose(entrada_txt);
