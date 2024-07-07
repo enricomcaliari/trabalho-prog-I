@@ -26,6 +26,7 @@ typedef struct
 {
   int linha, coluna;
   int morreu;
+  int fileira;
 } tInimigo;
 
 // definicao do tipo tMovimento
@@ -34,6 +35,7 @@ typedef struct
   char jogada;
   int pontos;
   int iteracao;
+  int total_movimentos_AD;
 } tMovimento;
 
 // definicao do tipo tTiro
@@ -41,6 +43,8 @@ typedef struct
 {
   int linha, coluna;
   int ativo;
+  int tiros_efetivos;
+  int tiros_nao_efetivos;
 } tTiro;
 
 // definicao do tipo tJogo
@@ -49,6 +53,7 @@ typedef struct
   tMapa mapa;
   tNave nave;
   tInimigo inimigo[20];
+  int inimigosDescidas;
   int inimigosRestantes;
   int nInimigos;
   int bonus;
@@ -275,6 +280,7 @@ tJogo MoveNave(tJogo jogo)
     }
     else
     {
+      jogo.movimento.total_movimentos_AD++;
       jogo.nave.coluna--;
       return jogo;
     }
@@ -287,6 +293,7 @@ tJogo MoveNave(tJogo jogo)
     }
     else
     {
+      jogo.movimento.total_movimentos_AD++;
       jogo.nave.coluna++;
       return jogo;
     }
@@ -314,6 +321,7 @@ tJogo NaveAtira(tJogo jogo)
     jogo.tiro.coluna = jogo.nave.coluna - 1;
     jogo.tiro.linha = jogo.nave.linha - 3;
     jogo.tiro.ativo = 1;
+    jogo.tiro.tiros_efetivos++;
     return jogo;
   }
 }
@@ -327,6 +335,7 @@ tJogo MoveTiro(tJogo jogo)
     if (jogo.tiro.linha == 0)
     {
       jogo.tiro.ativo = 0;
+      jogo.tiro.tiros_nao_efetivos++;
       return jogo;
     }
     return jogo;
@@ -408,6 +417,7 @@ tJogo InicializaJogo(char **argv)
     fscanf(mapa_txt, "%d %d)", &coluna, &linha);
     jogo.inimigo[jogo.nInimigos].linha = linha + 1;
     jogo.inimigo[jogo.nInimigos].coluna = coluna + 1;
+    jogo.inimigo[jogo.nInimigos].fileira = i;
     jogo.nInimigos++;
     while (fscanf(mapa_txt, "%c", &x))
     {
@@ -419,6 +429,7 @@ tJogo InicializaJogo(char **argv)
       sscanf(string, "(%d %d", &coluna, &linha);
       jogo.inimigo[jogo.nInimigos].linha = linha + 1;
       jogo.inimigo[jogo.nInimigos].coluna = coluna + 1;
+      jogo.inimigo[jogo.nInimigos].fileira = i;
       jogo.nInimigos++;
     }
   }
@@ -473,13 +484,13 @@ tJogo InicializaJogo(char **argv)
   }
   fclose(inimigo_txt);
 
-  // CRIACAO DO inicializao.txt
+  // CRIACAO DO inicializacao.txt
   char diretorio_inicializacao[MAX_DIRETORIO];
   sprintf(diretorio_inicializacao, "%s/saida/inicializacao.txt", argv[1]);
   FILE *inicializao_txt = fopen(diretorio_inicializacao, "w");
   if (inicializao_txt == NULL)
   {
-    printf("Erro ao gerar o arquivo inicializacao.txt\n");
+    printf("Erro ao gerar o arquivo inicializacao.txt.\n");
     exit(1);
   }
 
@@ -509,6 +520,10 @@ tJogo InicializaJogo(char **argv)
   {
     jogo.inimigo[k].morreu = 0;
   }
+  jogo.movimento.total_movimentos_AD = 0;
+  jogo.tiro.tiros_efetivos = 0;
+  jogo.tiro.tiros_nao_efetivos = 0;
+  jogo.inimigosDescidas = 0;
 
   fclose(inicializao_txt);
 
@@ -539,10 +554,27 @@ void RealizaJogo(tJogo jogo, char **argv)
     exit(1);
   }
 
+  FILE *estatisticas_txt;
+  char diretorio_estatisticas[MAX_DIRETORIO];
+  sprintf(diretorio_estatisticas, "%s/saida/estatisticas.txt", argv[1]);
+  estatisticas_txt = fopen(diretorio_estatisticas, "w");
+  if (estatisticas_txt == NULL)
+  {
+    printf("Erro ao gerar o arquivo estatisticas.txt\n");
+    exit(1);
+  }
+
   if (jogo.terminou == 1)
   {
     PrintaMapa(jogo, saida_txt);
     fprintf(saida_txt, "Parabéns, você ganhou!\n");
+    fprintf(estatisticas_txt, "Numero total de movimentos (A ou D): %d;\n", jogo.movimento.total_movimentos_AD);
+    fprintf(estatisticas_txt, "Numero de tiros efetivos: %d;\n", jogo.tiro.tiros_efetivos);
+    fprintf(estatisticas_txt, "Numero de tiros que nao acertaram: %d;\n", jogo.tiro.tiros_nao_efetivos);
+    fprintf(estatisticas_txt, "Numero de descidas dos inimigos: %d;\n", jogo.inimigosDescidas);
+    fclose(entrada_txt);
+    fclose(estatisticas_txt);
+    fclose(saida_txt);
     return;
   }
 
@@ -572,6 +604,10 @@ void RealizaJogo(tJogo jogo, char **argv)
     if (jogo.descer == 1)
     {
       jogo = MoveInimigo(1, 0, jogo);
+      if (jogo.inimigosRestantes > 0)
+      {
+        jogo.inimigosDescidas++;
+      }
       jogo.descer = 0;
     }
     else
@@ -602,7 +638,13 @@ void RealizaJogo(tJogo jogo, char **argv)
     PrintaMapa(jogo, saida_txt);
   }
 
+  fprintf(estatisticas_txt, "Numero total de movimentos (A ou D): %d;\n", jogo.movimento.total_movimentos_AD);
+  fprintf(estatisticas_txt, "Numero de tiros efetivos: %d;\n", jogo.tiro.tiros_efetivos);
+  fprintf(estatisticas_txt, "Numero de tiros que nao acertaram: %d;\n", jogo.tiro.tiros_nao_efetivos);
+  fprintf(estatisticas_txt, "Numero de descidas dos inimigos: %d;\n", jogo.inimigosDescidas);
+
   fclose(entrada_txt);
+  fclose(estatisticas_txt);
   fclose(saida_txt);
 }
 
