@@ -1,4 +1,0 @@
-space.c: In function ‘InicializaJogo’:
-space.c:551:8: warning: unused variable ‘matriz’ [-Wunused-variable]
-  551 |   char matriz[jogo.mapa.qtd_linhas][jogo.mapa.qtd_colunas];
-      |        ^~~~~~

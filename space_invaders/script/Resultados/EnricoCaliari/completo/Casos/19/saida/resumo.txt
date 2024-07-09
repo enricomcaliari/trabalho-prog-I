@@ -9,8 +9,8 @@
 [59] Jogador colidiu na lateral esquerda.
 [60] Jogador colidiu na lateral esquerda.
 [63] Inimigo de indice 1 da fileira 1 colidiu na lateral esquerda.
-[81] Inimigo de indice 1 da fileira 1 colidiu na lateral direita.
 [81] Jogador colidiu na lateral direita.
+[81] Inimigo de indice 1 da fileira 1 colidiu na lateral direita.
 [99] Inimigo de indice 1 da fileira 1 colidiu na lateral esquerda.
 [117] Inimigo de indice 1 da fileira 1 colidiu na lateral direita.
 [135] Inimigo de indice 1 da fileira 1 colidiu na lateral esquerda.

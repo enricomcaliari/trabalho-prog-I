@@ -241,26 +241,12 @@ tJogo VerificaParedeInimigo(tJogo jogo, FILE *resumo_txt)
     {
       jogo.horizontal = 1;
       jogo.descer = 1;
-      for (int x = 0; x < jogo.nInimigos; x++)
-      {
-        if (jogo.inimigo[x].coluna + 2 == jogo.mapa.qtd_colunas)
-        {
-          fprintf(resumo_txt, "[%d] Inimigo de indice %d da fileira %d colidiu na lateral direita.\n", jogo.movimento.iteracao + 1, jogo.inimigo[x].indice + 1, jogo.inimigo[x].fileira + 1);
-        }
-      }
       return jogo;
     }
     else if (jogo.horizontal == 1 && jogo.inimigo[k].coluna - 2 == 1)
     {
       jogo.horizontal = 0;
       jogo.descer = 1;
-      for (int x = 0; x < jogo.nInimigos; x++)
-      {
-        if (jogo.inimigo[x].coluna - 2 == 1)
-        {
-          fprintf(resumo_txt, "[%d] Inimigo de indice %d da fileira %d colidiu na lateral esquerda.\n", jogo.movimento.iteracao + 1, jogo.inimigo[x].indice + 1, jogo.inimigo[x].fileira + 1);
-        }
-      }
       return jogo;
     }
   }
@@ -388,11 +374,12 @@ tJogo MatouInimigo(tJogo jogo, FILE *resumo_txt)
             jogo.inimigo[k].morreu = 1;
             jogo.inimigosRestantes--;
             jogo.tiro.ativo = 0;
-            jogo.tiro.linha = 0;
-            jogo.tiro.coluna = 0;
             jogo.movimento.pontos += (jogo.inimigo[k].coluna - 1) * (jogo.mapa.qtd_linhas - jogo.inimigo[k].linha - 1);
             jogo.inimigo[k].iteracao_morte = jogo.movimento.iteracao;
             fprintf(resumo_txt, "[%d] Inimigo de indice %d da fileira %d foi atingido na posicao (%d %d).\n", jogo.movimento.iteracao, jogo.inimigo[k].indice + 1, jogo.inimigo[k].fileira + 1, jogo.inimigo[k].coluna + j - 1, jogo.inimigo[k].linha + i - 1);
+            jogo.inimigo[k].linha = jogo.tiro.linha;
+            jogo.tiro.linha = 0;
+            jogo.tiro.coluna = 0;
             return jogo;
           }
         }
@@ -547,8 +534,6 @@ tJogo InicializaJogo(char **argv)
     printf("Erro ao gerar o arquivo inicializacao.txt.\n");
     exit(1);
   }
-
-  char matriz[jogo.mapa.qtd_linhas][jogo.mapa.qtd_colunas];
 
   // define o mapa
   jogo = DefineMapa(jogo);
@@ -709,6 +694,17 @@ void RealizaJogo(tJogo jogo, char **argv)
     // move inimigo
     if (jogo.descer == 1)
     {
+      for (int k = 0; k < jogo.nInimigos; k++)
+      {
+        if (!jogo.horizontal && !jogo.inimigo[k].morreu && jogo.inimigo[k].coluna - 2 == 1)
+        {
+          fprintf(resumo_txt, "[%d] Inimigo de indice %d da fileira %d colidiu na lateral esquerda.\n", jogo.movimento.iteracao, jogo.inimigo[k].indice + 1, jogo.inimigo[k].fileira + 1);
+        }
+        else if (jogo.horizontal && !jogo.inimigo[k].morreu && jogo.inimigo[k].coluna + 2 == jogo.mapa.qtd_colunas)
+        {
+          fprintf(resumo_txt, "[%d] Inimigo de indice %d da fileira %d colidiu na lateral direita.\n", jogo.movimento.iteracao, jogo.inimigo[k].indice + 1, jogo.inimigo[k].fileira + 1);
+        }
+      }
       jogo = MoveInimigo(1, 0, jogo);
       if (jogo.inimigosRestantes > 0)
       {
