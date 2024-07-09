@@ -25,7 +25,7 @@ typedef struct
 typedef struct
 {
   int linha, coluna;
-  int morreu;
+  int morreu, iteracao_morte;
   int fileira, indice;
 } tInimigo;
 
@@ -47,12 +47,21 @@ typedef struct
   int tiros_nao_efetivos;
 } tTiro;
 
+// definicao do tipo tRanking
+typedef struct
+{
+  int linha;
+  int iteracao;
+  int fileira, indice;
+} tRanking;
+
 // definicao do tipo tJogo
 typedef struct
 {
   tMapa mapa;
   tNave nave;
   tInimigo inimigo[20];
+  tRanking ranking[20];
   int inimigosDescidas;
   int inimigosRestantes;
   int nInimigos;
@@ -65,6 +74,7 @@ typedef struct
   char inimigoAnimacao2[3][3];
   tMovimento movimento;
   tTiro tiro;
+  int heatmap[MAX_LINHA_MAPA][MAX_COLUNA_MAPA];
 } tJogo;
 
 // SUBFUNCOES
@@ -76,7 +86,8 @@ void PrintaMapa(tJogo jogo, FILE *saida_txt);
 tJogo MoveNave(tJogo jogo, FILE *resumo_txt);
 tJogo NaveAtira(tJogo jogo);
 tJogo MoveTiro(tJogo jogo);
-tJogo MatouInimigo(tJogo jogo, FILE *ranking_txt, FILE *resumo_txt);
+tJogo MatouInimigo(tJogo jogo, FILE *resumo_txt);
+tJogo AtualizaHeatmap(tJogo jogo);
 
 // FUNCOES PRINCIPAIS
 tJogo InicializaJogo(char **argv);
@@ -361,7 +372,7 @@ tJogo MoveTiro(tJogo jogo)
 }
 
 // SUBFUNCAO MATOU INIMIGO
-tJogo MatouInimigo(tJogo jogo, FILE *ranking_txt, FILE *resumo_txt)
+tJogo MatouInimigo(tJogo jogo, FILE *resumo_txt)
 {
   if (jogo.tiro.ativo)
   {
@@ -377,14 +388,33 @@ tJogo MatouInimigo(tJogo jogo, FILE *ranking_txt, FILE *resumo_txt)
             jogo.inimigo[k].morreu = 1;
             jogo.inimigosRestantes--;
             jogo.tiro.ativo = 0;
+            jogo.tiro.linha = 0;
+            jogo.tiro.coluna = 0;
             jogo.movimento.pontos += (jogo.inimigo[k].coluna - 1) * (jogo.mapa.qtd_linhas - jogo.inimigo[k].linha - 1);
-            fprintf(ranking_txt, "%d,%d,%d,%d\n", jogo.inimigo[k].indice + 1, jogo.inimigo[k].fileira + 1, jogo.mapa.qtd_linhas - jogo.inimigo[k].linha - 1, jogo.movimento.iteracao);
+            jogo.inimigo[k].iteracao_morte = jogo.movimento.iteracao;
             fprintf(resumo_txt, "[%d] Inimigo de indice %d da fileira %d foi atingido na posicao (%d %d).\n", jogo.movimento.iteracao, jogo.inimigo[k].indice + 1, jogo.inimigo[k].fileira + 1, jogo.inimigo[k].coluna + j - 1, jogo.inimigo[k].linha + i - 1);
             return jogo;
           }
         }
       }
     }
+  }
+  return jogo;
+}
+
+// SUBFUNCAO ATUALIZA HEATMAP
+tJogo AtualizaHeatmap(tJogo jogo)
+{
+  for (int i = -1; i < 2; i++)
+  {
+    for (int j = -1; j < 2; j++)
+    {
+      jogo.heatmap[jogo.nave.linha + i - 1][jogo.nave.coluna + j - 1] += 1;
+    }
+  }
+  if (jogo.tiro.linha != 0 && jogo.tiro.coluna != 0)
+  {
+    jogo.heatmap[jogo.tiro.linha][jogo.tiro.coluna] += 1;
   }
   return jogo;
 }
@@ -549,6 +579,14 @@ tJogo InicializaJogo(char **argv)
   jogo.tiro.tiros_nao_efetivos = 0;
   jogo.inimigosDescidas = 0;
 
+  for (int i = 0; i < jogo.mapa.qtd_linhas; i++)
+  {
+    for (int j = 0; j < jogo.mapa.qtd_colunas; j++)
+    {
+      jogo.heatmap[i][j] = 0;
+    }
+  }
+
   fclose(inicializao_txt);
 
   return jogo;
@@ -609,6 +647,17 @@ void RealizaJogo(tJogo jogo, char **argv)
     exit(1);
   }
 
+  FILE *heatmap_txt;
+  char diretorio_heatmap[MAX_DIRETORIO];
+  sprintf(diretorio_heatmap, "%s/saida/heatmap.txt", argv[1]);
+  heatmap_txt = fopen(diretorio_heatmap, "w");
+  if (heatmap_txt == NULL)
+  {
+    printf("Erro ao gerar o arquivo heatmap.txt\n");
+    exit(1);
+  }
+
+  jogo = AtualizaHeatmap(jogo);
   if (jogo.terminou == 1)
   {
     PrintaMapa(jogo, saida_txt);
@@ -617,6 +666,14 @@ void RealizaJogo(tJogo jogo, char **argv)
     fprintf(estatisticas_txt, "Numero de tiros efetivos: %d;\n", jogo.tiro.tiros_efetivos);
     fprintf(estatisticas_txt, "Numero de tiros que nao acertaram: %d;\n", jogo.tiro.tiros_nao_efetivos);
     fprintf(estatisticas_txt, "Numero de descidas dos inimigos: %d;\n", jogo.inimigosDescidas);
+    for (int i = 1; i < jogo.mapa.qtd_linhas - 1; i++)
+    {
+      for (int j = 1; j < jogo.mapa.qtd_colunas - 1; j++)
+      {
+        fprintf(heatmap_txt, " %3d", jogo.heatmap[i][j]);
+      }
+      fprintf(heatmap_txt, " \n");
+    }
     fclose(entrada_txt);
     fclose(estatisticas_txt);
     fclose(ranking_txt);
@@ -647,7 +704,7 @@ void RealizaJogo(tJogo jogo, char **argv)
       break;
     }
 
-    jogo = MatouInimigo(jogo, ranking_txt, resumo_txt);
+    jogo = MatouInimigo(jogo, resumo_txt);
 
     // move inimigo
     if (jogo.descer == 1)
@@ -685,6 +742,8 @@ void RealizaJogo(tJogo jogo, char **argv)
     jogo = DefineMapa(jogo);
 
     PrintaMapa(jogo, saida_txt);
+
+    jogo = AtualizaHeatmap(jogo);
   }
 
   fprintf(estatisticas_txt, "Numero total de movimentos (A ou D): %d;\n", jogo.movimento.total_movimentos_AD);
@@ -692,6 +751,51 @@ void RealizaJogo(tJogo jogo, char **argv)
   fprintf(estatisticas_txt, "Numero de tiros que nao acertaram: %d;\n", jogo.tiro.tiros_nao_efetivos);
   fprintf(estatisticas_txt, "Numero de descidas dos inimigos: %d;\n", jogo.inimigosDescidas);
 
+  int count = 0;
+  for (int k = 0; k < jogo.nInimigos; k++)
+  {
+    if (jogo.inimigo[k].morreu)
+    {
+      jogo.ranking[count].indice = jogo.inimigo[k].indice;
+      jogo.ranking[count].fileira = jogo.inimigo[k].fileira;
+      jogo.ranking[count].linha = jogo.inimigo[k].linha;
+      jogo.ranking[count].iteracao = jogo.inimigo[k].iteracao_morte;
+      count++;
+    }
+  }
+  for (int i = 0; i < count; i++)
+  {
+    for (int j = 0; j < count; j++)
+    {
+      if (jogo.ranking[i].linha > jogo.ranking[j].linha)
+      {
+        tRanking temp = jogo.ranking[j];
+        jogo.ranking[j] = jogo.ranking[i];
+        jogo.ranking[i] = temp;
+      }
+      else if (jogo.ranking[i].linha == jogo.ranking[j].linha && jogo.ranking[i].iteracao < jogo.ranking[j].iteracao)
+      {
+        tRanking temp = jogo.ranking[j];
+        jogo.ranking[j] = jogo.ranking[i];
+        jogo.ranking[i] = temp;
+      }
+    }
+  }
+  for (int k = 0; k < count; k++)
+  {
+    fprintf(ranking_txt, "%d,%d,%d,%d\n", jogo.ranking[k].indice + 1, jogo.ranking[k].fileira + 1, jogo.mapa.qtd_linhas - jogo.ranking[k].linha - 1, jogo.ranking[k].iteracao);
+  }
+
+  for (int i = 1; i < jogo.mapa.qtd_linhas - 1; i++)
+  {
+    for (int j = 1; j < jogo.mapa.qtd_colunas - 1; j++)
+    {
+      fprintf(heatmap_txt, " %3d", jogo.heatmap[i][j]);
+    }
+    fprintf(heatmap_txt, " \n");
+  }
+
+  fclose(heatmap_txt);
   fclose(entrada_txt);
   fclose(resumo_txt);
   fclose(estatisticas_txt);

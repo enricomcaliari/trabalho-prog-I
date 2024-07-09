@@ -2,7 +2,7 @@ Arquivos Esperados Corretos: 1 de 1
 Pastas Compiladas Corretamente: 1 de 1 
 Pastas Linkadas Corretamente: 1 de 1
 Teste completo
-  - Resultados corretos: 103 de 156
-Nota de EnricoCaliari para o teste completo: 8.14
-Nota de EnricoCaliari: 0+(8.14)
-Nota de EnricoCaliari: 8.14
+  - Resultados corretos: 132 de 156
+Nota de EnricoCaliari para o teste completo: 9.68
+Nota de EnricoCaliari: 0+(9.68)
+Nota de EnricoCaliari: 9.68
