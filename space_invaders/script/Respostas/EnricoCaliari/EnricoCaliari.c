@@ -124,25 +124,25 @@ void PrintaMapa(tJogo jogo, FILE *saida_txt);
  * @brief Move a nave do jogador ou atira a depender do movimento lido. Tambem verifica se o
  * jogador colidiu em uma lateral do mapa e, caso verdadeiro, imprime a colisao no arquivo
  * resumo.txt.
- * @param jogo recebe o jogo para atualizar a posicao ou o tiro da nave
- * @param resumo_txt caso exista colisao, onde ela sera impressa
- * @return tJogo retorna o jogo com a posicao ou o tiro da nave atualizado
+ * @param jogo recebe o jogo para atualizar a posicao ou o tiro da nave.
+ * @param resumo_txt caso exista colisao, onde ela sera impressa.
+ * @return tJogo retorna o jogo com a posicao ou o tiro da nave atualizado.
  */
 tJogo MoveNave(tJogo jogo, FILE *resumo_txt);
 
 /**
  * @brief A nave do jogador atira caso nao haja um tiro ativo, ativando o tiro e atualizando
  * o numero de tiros efetivos.
- * @param jogo recebe o jogo para atualizar o tiro
- * @return tJogo retorna o jogo com o tiro atualizado
+ * @param jogo recebe o jogo para atualizar o tiro.
+ * @return tJogo retorna o jogo com o tiro atualizado.
  */
 tJogo NaveAtira(tJogo jogo);
 
 /**
  * @brief Se houver um tiro ativo, move-o uma posicao acima no mapa. Se o tiro atingir o topo
  * do mapa, o tiro eh inativado e atualiza-se o numero de tiros nao efetivos.
- * @param jogo recebe o jogo para atualizar a posicao do tiro
- * @return tJogo retorna o jogo com a posicao do tiro atualizada
+ * @param jogo recebe o jogo para atualizar a posicao do tiro.
+ * @return tJogo retorna o jogo com a posicao do tiro atualizada.
  */
 tJogo MoveTiro(tJogo jogo);
 
@@ -150,16 +150,16 @@ tJogo MoveTiro(tJogo jogo);
  * @brief Se houver um tiro ativo, verifica se o tiro atingiu algum inimigo vivo. Se for o caso,
  * mata o inimigo, diminui a quantidade de inimigos restantes, inativa o tiro, soma os pontos e
  * imprime as informacoes no arquivo resumo.txt.
- * @param jogo recebe o jogo para a verificacao
- * @param resumo_txt onde a morte do inimigo sera impressa
- * @return tJogo retorna o jogo com os inimigos atualizados
+ * @param jogo recebe o jogo para a verificacao.
+ * @param resumo_txt onde a morte do inimigo sera impressa.
+ * @return tJogo retorna o jogo com os inimigos atualizados.
  */
 tJogo MatouInimigo(tJogo jogo, FILE *resumo_txt);
 
 /**
  * @brief Atualiza o heatmap de acordo com a movimentacao da nave do jogador e dos tiros.
- * @param jogo recebe o jogo para atualizar o heatmap
- * @return tJogo retorna o jogo com o heatmap atualizado
+ * @param jogo recebe o jogo para atualizar o heatmap.
+ * @return tJogo retorna o jogo com o heatmap atualizado.
  */
 tJogo AtualizaHeatmap(tJogo jogo);
 
@@ -167,8 +167,8 @@ tJogo AtualizaHeatmap(tJogo jogo);
  * @brief Realiza a leitura das informacoes dos arquivos mapa.txt e inimigo.txt localizados
  * no diretorio argv fornecido e as atribui as respectivas variaveis. Tambem gera o arquivo
  * inicializacao.txt.
- * @param argv diretorio fornecido ao executar o programa
- * @return tJogo retorna o jogo inicializado
+ * @param argv diretorio fornecido ao executar o programa.
+ * @return tJogo retorna o jogo inicializado.
  */
 tJogo InicializaJogo(char **argv);
 
@@ -176,13 +176,30 @@ tJogo InicializaJogo(char **argv);
  * @brief Realiza o jogo efetivamente. Le as informacoes do arquivo entrada.txt localizado no
  * diretorio argv fornecido e as atribui as respectivas variaveis. Tambem gera os arquivos
  * estatisticas.txt, heatmap.txt, ranking.txt, resumo.txt e saida.txt.
- * @param jogo recebe o jogo inicializado
- * @param argv diretorio fornecido ao executar o programa
+ * @param jogo recebe o jogo inicializado.
+ * @param argv diretorio fornecido ao executar o programa.
  */
 void RealizaJogo(tJogo jogo, char **argv);
 
+/**
+ * @brief Imprime as estatisticas no arquivo estatisticas.txt.
+ * @param jogo recebe as estatisticas do jogo.
+ * @param estatisticas_txt onde as estatisticas serao impressas.
+ */
 void PrintaEstatisticas(tJogo jogo, FILE *estatisticas_txt);
+
+/**
+ * @brief Imprime o ranking no arquivo ranking.txt.
+ * @param jogo recebe o ranking do jogo.
+ * @param ranking_txt onde o ranking sera impresso.
+ */
 void PrintaRanking(tJogo jogo, FILE *ranking_txt);
+
+/**
+ * @brief Imprime o heatmap no arquivo heatmap.txt.
+ * @param jogo recebe o heatmap do jogo.
+ * @param heatmap_txt onde o heatmap sera impresso.
+ */
 void PrintaHeatmap(tJogo jogo, FILE *heatmap_txt);
 
 tJogo DefineMapa(tJogo jogo)
