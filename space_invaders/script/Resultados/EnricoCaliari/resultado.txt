@@ -1,4 +1,4 @@
-Arquivos Esperados Corretos: 1 de 1
+Arquivos Esperados Corretos: 0 de 1
 Pastas Compiladas Corretamente: 1 de 1 
 Pastas Linkadas Corretamente: 1 de 1
 Teste completo

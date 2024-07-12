@@ -11,14 +11,14 @@ CRIANDO O DIRETÓRIO DE RESULTADO PARA EnricoCaliari:
  - Arquivos criados: ok!
 
 CHECKANDO OS ARQUIVOS DO ALUNO:
- - Arquivo esperado 'Respostas/EnricoCaliari/space.c' encontrado!
- - Arquivos esperados enviados: Ok!
+ - Arquivo esperado 'Respostas/EnricoCaliari/space.c' não encontrado!
+ - Arquivos esperados enviados: Faltando!
 
 COPIANDO OS ARQUIVOS PARA A PASTA DE RESULTADO DO ALUNO:
  - Pasta completo:
  - Copiando os Casos de teste para a pasta Resultados/EnricoCaliari/completo
  - Copiando Arquivos Extras do Aluno:
- - Copiando Respostas/EnricoCaliari/space.c para Resultados/EnricoCaliari/completo
+ - Copiando Respostas/EnricoCaliari/EnricoCaliari.c para Resultados/EnricoCaliari/completo
  - Arquivos copiados: ok!
 
 COMPILANDO OS ARQUIVOS NA PASTA DE RESULTADO DO ALUNO:
@@ -250,7 +250,7 @@ RESULTADOS FINAIS
 
 ----------------------------------------------------------------------------
 Aluno: EnricoCaliari
- - Arquivos Esperados Corretos: 1 de 1
+ - Arquivos Esperados Corretos: 0 de 1
  - Pastas Compiladas Corretamente: 1 de 1 
  - Pastas Linkadas Corretamente: 1 de 1
  - Teste completo
